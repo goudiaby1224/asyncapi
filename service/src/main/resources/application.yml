@@ -1,0 +1,55 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: kafka-async-api
+
+  cloud:
+    stream:
+      # Function definition
+      function:
+        definition: messageConsumer
+      
+      # Kafka bindings
+      bindings:
+        messageConsumer-in-0:
+          destination: message-topic
+          group: message-consumer-group
+          content-type: application/json
+      
+      # Kafka binder configuration
+      kafka:
+        binder:
+          brokers: localhost:9092
+          auto-create-topics: true
+          configuration:
+            auto.offset.reset: earliest
+        
+        bindings:
+          messageConsumer-in-0:
+            consumer:
+              enable-dlq: false
+              auto-commit-offset: true
+              start-offset: earliest
+
+  kafka:
+    consumer:
+      bootstrap-servers: localhost:9092
+      group-id: message-consumer-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      enable-auto-commit: true
+
+# External API configuration
+external:
+  api:
+    base-url: http://localhost:9999
+
+logging:
+  level:
+    com.asyncapi: DEBUG
+    org.springframework.cloud.stream: DEBUG
+    org.apache.kafka: INFO
+

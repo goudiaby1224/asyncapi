@@ -1,0 +1,53 @@
+spring:
+  application:
+    name: kafka-async-api-test
+  
+  main:
+    allow-bean-definition-overriding: true
+
+  cloud:
+    stream:
+      function:
+        definition: messageConsumer
+      
+      default-binder: kafka
+      
+      bindings:
+        messageConsumer-in-0:
+          destination: message-topic
+          group: message-consumer-group-test
+          content-type: application/json
+          binder: kafka
+      
+      kafka:
+        binder:
+          brokers: ${spring.embedded.kafka.brokers}
+          auto-create-topics: true
+          configuration:
+            auto.offset.reset: earliest
+        
+        bindings:
+          messageConsumer-in-0:
+            consumer:
+              enable-dlq: false
+              auto-commit-offset: true
+              start-offset: earliest
+
+  kafka:
+    consumer:
+      bootstrap-servers: ${spring.embedded.kafka.brokers}
+      group-id: message-consumer-group-test
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      enable-auto-commit: true
+
+external:
+  api:
+    base-url: http://localhost:${wiremock.server.port}
+
+logging:
+  level:
+    com.asyncapi: DEBUG
+    org.springframework.cloud.stream: DEBUG
+    org.apache.kafka: WARN
